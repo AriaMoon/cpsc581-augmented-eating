@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Interactive Table</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: #cfc8bf;
+    display: flex;
+    flex-direction: column; /* stack vertically */
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* ===== WELCOME BOX ===== */
+  .welcome-box {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 10px;
+    border: 2px solid #333;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  .welcome-box h2 {
+    margin: 0 0 15px;
+  }
+
+  .btn-group button,
+  #endBtn,
+  #manualGameBtn {
+    margin: 5px;
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 2px solid #333;
+    background: #e0c3a0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.2s;
+  }
+
+  .game-prompt button {
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  background-color: #d5a97f;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+  .btn-group button:hover {
+    background: #d5a97f;
+  }
+
+  .scene {
+    position: relative;
+    width: 600px;
+    height: 300px;
+  }
+
+  /* ===== TABLE ===== */
+  .table {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .table-top {
+    width: 260px;
+    height: 80px;
+    background: #d8b48a;
+    border: 2px solid #333;
+    border-radius: 6px;
+    box-shadow:
+      0 0 20px rgba(255, 220, 150, 0.6),
+      0 0 40px rgba(255, 200, 120, 0.4);
+  }
+
+  .table-front {
+    width: 260px;
+    height: 20px;
+    background: #c79a6a;
+    border: 2px solid #333;
+    border-top: none;
+  }
+
+  .leg {
+    width: 10px;
+    height: 120px;
+    background: #e0a37a;
+    border: 2px solid #333;
+    position: absolute;
+    top: 100px;
+  }
+
+  .leg.left { left: 10px; }
+  .leg.right { right: 10px; }
+
+  /* ===== CHAIR ===== */
+  .chair {
+    position: absolute;
+    width: 50px;
+    height: 140px;
+  }
+
+  .seat {
+    position: absolute;
+    bottom: 40px;
+    width: 45px;
+    height: 20px;
+    background: #e0c3a0;
+    border: 2px solid #333;
+    border-radius: 4px;
+  }
+
+  .backrest {
+    position: absolute;
+    bottom: 60px;
+    width: 10px;
+    height: 80px;
+    background: #c9a87f;
+    border: 2px solid #333;
+    border-radius: 2px;
+  }
+
+  .leg-front,
+  .leg-back {
+    position: absolute;
+    width: 10px;
+    height: 70px;
+    background: #c79a6a;
+    border: 2px solid #333;
+    bottom: 0;
+  }
+
+  .leg-front { left: 0; }
+  .leg-back { right: 0; }
+
+  .left-chair { left: 50px; top: 80px; }
+  .right-chair { right: 50px; top: 80px; transform: scaleX(-1); }
+
+  /* ===== QUIETNESS PROMPT ===== */
+  .quiet-prompt {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+
+  .quiet-prompt button {
+    margin-top: 10px;
+    padding: 10px;
+    border: none;
+    background-color: #d5a97f;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  /* ===== GAME PROMPT ===== */
+  .game-prompt {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+  <!-- WELCOME BOX -->
+  <div class="welcome-box">
+    <h2 id="welcomeText">Welcome! Pick # of people dining</h2>
+
+    <!-- NUMBER BUTTONS -->
+    <div class="btn-group" id="choiceButtons">
+      <button onclick="selectPeople(2)">2</button>
+      <button onclick="selectPeople(3)">3</button>
+      <button onclick="selectPeople(4)">4</button>
+    </div>
+
+    <!-- END MEAL -->
+    <button id="endBtn" onclick="endMeal()" style="display:none;">
+      End Meal
+    </button>
+
+    <button id="manualGameBtn" onclick="triggerManualGame()" style="display:none;">
+      Start a Game
+    </button>
+
+    <div id="gameTimer" style="display:none; font-size: 24px; margin-top: 10px;">
+      ⏱ 30
+    </div>
+
+  </div>
+
+  <div class="scene">
+
+    <!-- LEFT CHAIR -->
+    <div class="chair left-chair">
+      <div class="seat"></div>
+      <div class="backrest"></div>
+      <div class="leg-front"></div>
+      <div class="leg-back"></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table">
+      <div class="table-top"></div>
+      <div class="table-front"></div>
+      <div class="leg left"></div>
+      <div class="leg right"></div>
+    </div>
+
+    <!-- RIGHT CHAIR -->
+    <div class="chair right-chair">
+      <div class="seat"></div>
+      <div class="backrest"></div>
+      <div class="leg-front"></div>
+      <div class="leg-back"></div>
+    </div>
+
+  </div>
+
+  <!-- QUIETNESS PROMPT -->
+  <div id="quietPrompt" class="quiet-prompt">
+    <h3>It's been quiet for a while!</h3>
+    <p id="conversationPrompt">Would you like to continue the conversation?</p>
+    <button onclick="handleQuestionPrompt()">Close</button>
+  </div>
+
+  <!-- GAME PROMPT -->
+  <div id="gamePrompt" class="game-prompt">
+    <h3>How about a game?</h3>
+    <p id="gamePromptText">Would you like to play a game?</p>
+    <button onclick="acceptGamePrompt()">Yes, let's play!</button>
+    <button onclick="dismissGamePrompt()">No, let's keep talking.</button>
+  </div>
+
+<script>
+
+let diningActive = false;
+let currentTable = null;
+let micStream;
+let audioContext;
+let analyser;
+let microphone;
+let dataArray;
+let silenceStartTime = null;
+let silenceDuration = 0;  // Duration of silence in seconds
+
+let promptShown = false;
+let conversationAnswered = true; // allow first prompt
+let gameMode = false;
+let lastPrompt = 'conversation';
+
+let cooldownUntil = 0; // timestamp (ms) until prompts are allowed again
+const COOLDOWN_TIME = 15000; // 15 seconds (adjust if you want)
+
+let gameTimerInterval;
+let timeLeft;
+
+// List of conversation starters
+const conversationStarters = [
+  "Tell me about your day!",
+  "What was your childhood favorite movie?",
+  "If you could visit any country, where would you go?",
+  "What's the best meal you've ever had?",
+  "Tell me about a hobby you’ve always wanted to try.",
+  "What’s a book that changed your life?",
+  "If you could meet any historical figure, who would it be?",
+  "What’s your most cherished childhood memory?",
+  "What’s one of your biggest goals in life?",
+  "What’s a skill you’re working on improving?"
+];
+
+const gameOptions = [
+  "Trivia Challenge",
+  "Word Association",
+  "Quick Draw",
+  "Memory Match",
+  "Guess the Song",
+  "Two Truths and a Lie",
+  "I Spy"
+];
+
+// ===== SELECT TABLE =====
+function selectPeople(num) {
+  const text = document.getElementById("welcomeText");
+  const choiceButtons = document.getElementById("choiceButtons");
+  const endBtn = document.getElementById("endBtn");
+
+  const manualGameBtn = document.getElementById("manualGameBtn");
+  manualGameBtn.style.display = "inline-block";
+
+  currentTable = num;
+
+  text.innerText = "Welcome! Table for " + num;
+
+  choiceButtons.style.display = "none";
+  endBtn.style.display = "inline-block";
+
+  diningActive = true;
+  startMic();
+}
+
+// ===== END MEAL =====
+function endMeal() {
+  const text = document.getElementById("welcomeText");
+  const choiceButtons = document.getElementById("choiceButtons");
+  const endBtn = document.getElementById("endBtn");
+
+  const manualGameBtn = document.getElementById("manualGameBtn");
+  manualGameBtn.style.display = "none";
+
+  text.innerText = "Welcome! Pick # of people dining";
+
+  choiceButtons.style.display = "block";
+  endBtn.style.display = "none";
+
+  diningActive = false;
+  stopMic();
+}
+
+// ===== MICROPHONE INPUT SETUP =====
+async function startMic() {
+  if (navigator.mediaDevices.getUserMedia) {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      microphone = audioContext.createMediaStreamSource(micStream);
+      microphone.connect(analyser);
+      analyser.fftSize = 256;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      monitorLoudness(); // Start monitoring loudness
+    } catch (err) {
+      console.log('Error accessing the microphone: ', err);
+    }
+  } else {
+    alert("Your browser does not support microphone access.");
+  }
+}
+
+// Stop microphone and cleanup
+function stopMic() {
+  if (micStream) {
+    micStream.getTracks().forEach(track => track.stop());
+  }
+}
+
+// Monitor loudness (sound level)
+function monitorLoudness() {
+  if (!diningActive) return;
+
+  analyser.getByteFrequencyData(dataArray);
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    sum += dataArray[i];
+  }
+  const average = sum / dataArray.length;
+
+  changeTableColor(average); // Update table color based on loudness
+
+  if (average < 50) {
+    if (!silenceStartTime) {
+      silenceStartTime = Date.now();
+    } else {
+      silenceDuration = (Date.now() - silenceStartTime) / 1000;
+
+      if (
+        silenceDuration > 10 &&
+        !promptShown &&
+        !gameMode &&
+        Date.now() > cooldownUntil
+      ) {
+        if (lastPrompt === 'conversation') {
+          showConversationPrompt();
+        } else {
+          showGamePrompt();
+        }
+      }
+    }
+  } else {
+    silenceStartTime = null;
+    silenceDuration = 0;
+    promptShown = false;
+  }
+
+  requestAnimationFrame(monitorLoudness);
+}
+
+// Change table color based on loudness
+function changeTableColor(average) {
+  const tableTop = document.querySelector('.table-top');
+
+  if (gameMode) {
+    tableTop.style.boxShadow = '0 0 40px rgba(0, 255, 0, 0.6), 0 0 60px rgba(0, 255, 0, 0.4)';  // Green during game mode
+  } else if (average < 10) {
+    tableTop.style.boxShadow = '0 0 10px rgba(255, 220, 150, 0.6), 0 0 20px rgba(255, 200, 120, 0.4)'; // Quiet
+  } else if (average < 60) {
+    tableTop.style.boxShadow = '0 0 20px rgba(0, 0, 255, 0.4)';  
+  } else {
+    tableTop.style.boxShadow = '0 0 40px rgba(255, 100, 50, 0.8), 0 0 60px rgba(255, 80, 40, 0.6)'; // Loud
+  }
+}
+
+function speakText(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 2; // speed of speech (0.5 - 2)
+    utterance.pitch = 2; // pitch of voice
+    window.speechSynthesis.speak(utterance);
+  } else {
+    console.log("TTS not supported in this browser.");
+  }
+}
+
+// Show conversation prompt after silence
+function showConversationPrompt() {
+  const prompt = document.getElementById("quietPrompt");
+
+  const randomIndex = Math.floor(Math.random() * conversationStarters.length);
+  const randomQuestion = conversationStarters[randomIndex];
+
+  document.getElementById("conversationPrompt").innerText = randomQuestion;
+  prompt.style.display = "block";
+
+  promptShown = true;
+  lastPrompt = 'conversation';
+  conversationAnswered = false;
+
+  // Speak the prompt out loud
+  speakText("It's been quiet for a while! " + randomQuestion);
+}
+
+// Handle the conversation prompt action
+function handleQuestionPrompt() {
+  document.getElementById("quietPrompt").style.display = "none";
+
+  conversationAnswered = true;
+  promptShown = false;
+
+  lastPrompt = 'game';
+
+  // small cooldown before next prompt cycle
+  cooldownUntil = Date.now() + 8000; // shorter than game cooldown
+}
+
+// Show game prompt
+function showGamePrompt() {
+  const gamePrompt = document.getElementById("gamePrompt");
+
+  const randomIndex = Math.floor(Math.random() * gameOptions.length);
+  const selectedGame = gameOptions[randomIndex];
+  gamePrompt.dataset.currentGame = selectedGame;
+
+  gamePrompt.querySelector("p").innerText = `Would you like to play "${selectedGame}"?`;
+
+  gamePrompt.style.display = "block";
+  document.getElementById("manualGameBtn").style.display = "none"; // hide manual button
+
+  promptShown = true;
+
+  // Speak the prompt out loud
+  speakText("How about we play a game? ");
+}
+
+// Start the game
+function startGame() {
+  clearInterval(gameTimerInterval);
+
+  gameMode = true;
+  promptShown = true;
+
+  document.getElementById("manualGameBtn").style.display = "none";
+
+  const gamePrompt = document.getElementById("gamePrompt");
+  const selectedGame = gamePrompt.dataset.currentGame || "Random Game";
+
+  const timerEl = document.getElementById("gameTimer");
+  timerEl.style.display = "block";
+
+  // Only add countdown without overwriting game name
+  timeLeft = 30;
+  timerEl.innerText = `🎮 Playing: ${selectedGame}\n⏱ ${timeLeft}`;
+
+  gameTimerInterval = setInterval(() => {
+    timeLeft--;
+    timerEl.innerText = `🎮 Playing: ${selectedGame}\n⏱ ${timeLeft}`;
+
+    if (timeLeft <= 0) {
+      clearInterval(gameTimerInterval);
+      endGame();
+    }
+  }, 1000);
+
+  console.log(`Starting game: ${selectedGame}`);
+}
+
+function endGame() {
+  clearInterval(gameTimerInterval);
+
+  gameMode = false;
+  promptShown = false;
+
+  const timerEl = document.getElementById("gameTimer");
+  timerEl.style.display = "none";
+
+  document.getElementById("manualGameBtn").style.display = "inline-block";
+
+  lastPrompt = 'conversation';
+  cooldownUntil = Date.now() + COOLDOWN_TIME;
+}
+
+function acceptGamePrompt() {
+  const gamePrompt = document.getElementById("gamePrompt");
+  gamePrompt.style.display = "none"; // hide the prompt
+
+  startGame(); // start timer & game
+}
+
+// Dismiss the game and go back to conversation prompts
+function dismissGamePrompt() {
+  const gamePrompt = document.getElementById("gamePrompt");
+  gamePrompt.style.display = "none"; // hide the prompt
+
+  lastPrompt = 'conversation';
+  promptShown = false;
+  cooldownUntil = Date.now() + COOLDOWN_TIME;
+
+  document.getElementById("manualGameBtn").style.display = "inline-block"; // show manual button
+}
+
+function triggerManualGame() {
+  if (gameMode) return;
+
+  const gamePrompt = document.getElementById("gamePrompt");
+
+  // Pick a random game
+  const randomIndex = Math.floor(Math.random() * gameOptions.length);
+  const selectedGame = gameOptions[randomIndex];
+  gamePrompt.dataset.currentGame = selectedGame;
+
+  // Hide prompt if visible
+  gamePrompt.style.display = "none";
+
+  startGame(); // now start timer & hide manual button
+}
+
+</script>
+
+</body>
+</html>
