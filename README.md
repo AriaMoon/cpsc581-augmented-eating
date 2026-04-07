@@ -2,8 +2,8 @@
 The repo for the augmented eating experience 
 Concept: Interactive table prototype 
 
-**Index.html
-**
+**Index.html**
+
 How to run:
 
 Open index.html on a web browser that supports microphone access. 
